@@ -23,7 +23,7 @@ export default function useFetchData(selectedOption: string | null): UseFetchDat
     const controller = new AbortController();
     const normalizedOption = selectedOption?.toLowerCase() ?? 'guayaquil';
     const cityConfig = CITY_COORDS[normalizedOption] ?? CITY_COORDS['guayaquil'];
-    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${cityConfig.latitude}&longitude=${cityConfig.longitude}&hourly=temperature_2m,wind_speed_10m&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m`;
+    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${cityConfig.latitude}&longitude=${cityConfig.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,is_day&hourly=temperature_2m,wind_speed_10m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
 
     const fetchData = async () => {
       setLoading(true);

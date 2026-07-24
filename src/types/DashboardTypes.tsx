@@ -34,12 +34,10 @@ export interface HourlyUnits {
   time: string
   temperature_2m: string
   wind_speed_10m: string
-  relative_humidity_2m: string
 }
 
 export interface Hourly {
   time: string[]
   temperature_2m: number[]
   wind_speed_10m: number[]
-  relative_humidity_2m: number[]
 }
