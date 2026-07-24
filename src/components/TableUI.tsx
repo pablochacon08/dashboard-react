@@ -26,7 +26,7 @@ function processHourlyData(data: OpenMeteoResponse) {
    }));
 }
 
-const columns: GridColDef[] = [ 
+const columns: GridColDef[] = [
    { field: 'id', headerName: 'ID', width: 60 },
    {
       field: 'time',
