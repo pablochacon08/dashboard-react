@@ -19,13 +19,22 @@ const darkTheme = createTheme({
   typography: { fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif' },
 });
 
-function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefined) {
+function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefined, temperature: number | undefined) {
   const day = isDay !== 0;
 
   if (weatherCode === undefined) {
     return {
       description: 'Cargando clima...',
       bgImage: 'https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=2070',
+    };
+  }
+
+  // Si la temperatura es menor o igual a 4 grados, forzamos imagen gélida
+  if (temperature !== undefined && temperature <= 4) {
+    return {
+      // Si de paso está nevando según el código, decimos 'Nieve', si no, 'Frío Extremo'
+      description: [71, 73, 75, 77, 85, 86].includes(weatherCode) ? 'Nieve' : 'Frío Extremo',
+      bgImage: 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?q=80&w=2000',
     };
   }
 
@@ -106,7 +115,8 @@ export default function App() {
 
   const { description: weatherDescription, bgImage } = getWeatherInfo(
     data?.current.weather_code,
-    data?.current.is_day
+    data?.current.is_day,
+    data?.current.temperature_2m
   );
 
   const glassStyle = {
@@ -138,9 +148,11 @@ export default function App() {
               <Box sx={{ ...glassStyle, p: 3, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h3" sx={{ fontWeight: '300', color: '#fff', letterSpacing: '2px' }}>
                   CLIMA <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{location.name}</span>
-                  {location.countryCode && (
-                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>, {getCountryName(location.countryCode)}</span>
-                  )}
+                  {location.country && (
+                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                      , {location.country}
+                    </span>
+                )}
                 </Typography>
               </Box>
             </Grid>
