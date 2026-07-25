@@ -9,10 +9,11 @@ interface IndicatorUIProps {
     title?: string;
     description?: string;
     icon: React.ReactNode;
-    descriptionVariant?: 'h3' | 'h5' | 'h6';
+    descriptionVariant?: 'h3' | 'h5' | 'h6' | 'subtitle1';
+    noWrap?: boolean;
 }
 
-export default function IndicatorUI({ title, description, icon, descriptionVariant = 'h3' }: IndicatorUIProps) {
+export default function IndicatorUI({ title, description, icon, descriptionVariant = 'h3', noWrap = false }: IndicatorUIProps) {
     return (
         <Card elevation={0} sx={{
             height: '100%',
@@ -24,11 +25,22 @@ export default function IndicatorUI({ title, description, icon, descriptionVaria
         }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', px: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.1)', width: 48, height: 48, mr: 2, color: 'white' }}>
+                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.1)', width: 48, height: 48, mr: 2, color: 'white', flexShrink: 0 }}>
                         {icon}
                     </Avatar>
 
-                    <Typography variant={descriptionVariant} component="div" sx={{ fontWeight: '400' }}>
+                    <Typography
+                        variant={descriptionVariant}
+                        component="div"
+                        sx={{
+                            fontWeight: '400',
+                            ...(noWrap && {
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }),
+                        }}
+                    >
                         {description}
                     </Typography>
                 </Box>

@@ -20,7 +20,8 @@ export interface LocationData {
    latitude: number;
    longitude: number;
    country?: string;
-   admin1?: string; 
+   countryCode?: string;
+   admin1?: string;
 }
 
 interface SelectorProps {
@@ -29,9 +30,9 @@ interface SelectorProps {
 }
 
 const QUICK_LOCATIONS: LocationData[] = [
-    { name: 'Guayaquil', latitude: -2.1962, longitude: -79.8862, country: 'Ecuador' },
-    { name: 'Quito', latitude: -0.1807, longitude: -78.4678, country: 'Ecuador' },
-    { name: 'Hacienda Victoria', latitude: -2.1465, longitude: -79.6015, country: 'Ecuador' },
+    { name: 'Guayaquil', latitude: -2.1962, longitude: -79.8862, country: 'Ecuador', countryCode: 'EC' },
+    { name: 'Quito', latitude: -0.1807, longitude: -78.4678, country: 'Ecuador', countryCode: 'EC' },
+    { name: 'Hacienda Victoria', latitude: -2.1465, longitude: -79.6015, country: 'Ecuador', countryCode: 'EC' },
 ];
 
 export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorProps) {
@@ -43,7 +44,7 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
         setOpen(false);
-        setInputValue(''); 
+        setInputValue('');
     };
 
     useEffect(() => {
@@ -57,13 +58,14 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
             try {
                 const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${inputValue}&count=5&language=es&format=json`);
                 const data = await res.json();
-                
+
                 if (data.results) {
                     const locations = data.results.map((item: any) => ({
                         name: item.name,
                         latitude: item.latitude,
                         longitude: item.longitude,
                         country: item.country,
+                        countryCode: item.country_code,
                         admin1: item.admin1
                     }));
                     setOptions(locations);
@@ -81,15 +83,15 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
 
     return (
        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          
-          <Button 
+
+          <Button
             onClick={handleOpen}
             variant="outlined"
             startIcon={<SearchIcon />}
-            sx={{ 
-                color: 'white', 
+            sx={{
+                color: 'white',
                 borderColor: 'rgba(255,255,255,0.2)',
-                borderRadius: '24px', 
+                borderRadius: '24px',
                 py: 1.5,
                 px: 3,
                 justifyContent: 'flex-start',
@@ -114,12 +116,12 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 {QUICK_LOCATIONS.map((loc, index) => (
-                    <Chip 
+                    <Chip
                         key={index}
                         icon={<LocationOnIcon fontSize="small" />}
                         label={loc.name}
                         onClick={() => onOptionSelect(loc)}
-                        sx={{ 
+                        sx={{
                             color: 'white',
                             background: selectedOption.name === loc.name ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
                             borderColor: 'rgba(255,255,255,0.2)',
@@ -135,8 +137,8 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
             </Box>
           </Box>
 
-          <Dialog 
-            open={open} 
+          <Dialog
+            open={open}
             onClose={handleClose}
             fullWidth
             maxWidth="sm"
@@ -150,7 +152,7 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
                 },
                 paper: {
                     sx: {
-                        background: 'rgba(255, 255, 255, 0.1)', 
+                        background: 'rgba(255, 255, 255, 0.1)',
                         backdropFilter: 'blur(16px)',
                         WebkitBackdropFilter: 'blur(16px)',
                         borderRadius: '24px',
@@ -167,7 +169,7 @@ export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorP
                     <SearchIcon sx={{ mr: 1.5, opacity: 0.7 }} />
                     Buscar ubicación
                 </Typography>
-                
+
                 <Autocomplete
                     options={options}
                     getOptionLabel={(option) => `${option.name}${option.admin1 ? ', ' + option.admin1 : ''}${option.country ? ' (' + option.country + ')' : ''}`}
