@@ -7,23 +7,17 @@ interface UseFetchDataResult {
   error: string | null;
 }
 
-const CITY_COORDS: Record<string, { latitude: number; longitude: number }> = {
-  guayaquil: { latitude: -2.1962, longitude: -79.8862 },
-  quito: { latitude: -0.1807, longitude: -78.4678 },
-  manta: { latitude: 0.9776, longitude: -80.7031 },
-  cuenca: { latitude: -2.9006, longitude: -79.0059 },
-};
-
-export default function useFetchData(selectedOption: string | null): UseFetchDataResult {
+// Ahora el hook recibe coordenadas directamente
+export default function useFetchData(latitude: number, longitude: number): UseFetchDataResult {
   const [data, setData] = useState<OpenMeteoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    const normalizedOption = selectedOption?.toLowerCase() ?? 'guayaquil';
-    const cityConfig = CITY_COORDS[normalizedOption] ?? CITY_COORDS['guayaquil'];
-    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${cityConfig.latitude}&longitude=${cityConfig.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,is_day&hourly=temperature_2m,wind_speed_10m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
+    
+    // Inyectamos la latitud y longitud en la URL
+    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,is_day&hourly=temperature_2m,wind_speed_10m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
 
     const fetchData = async () => {
       setLoading(true);
@@ -51,7 +45,7 @@ export default function useFetchData(selectedOption: string | null): UseFetchDat
     void fetchData();
 
     return () => controller.abort();
-  }, [selectedOption]);
+  }, [latitude, longitude]); // El efecto se dispara cuando cambian las coordenadas
 
   return { data, loading, error };
 }

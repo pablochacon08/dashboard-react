@@ -1,11 +1,11 @@
 import './App.css'
 import { Grid, Box, Container, Typography, ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import SelectorUI from './components/SelectorUI';
 import IndicatorUI from './components/IndicatorUI';
 import useFetchData from './hooks/useFetchData';
 import TableUI from './components/TableUI';
 import ChartUI from './components/ChartUI';
 import { useState } from 'react';
+import SelectorUI, { type LocationData } from './components/SelectorUI';
 
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import AirIcon from '@mui/icons-material/Air';
@@ -77,8 +77,14 @@ function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefin
 }
 
 export default function App() {
-  const [selectedOption, setSelectedOption] = useState<string | null>('guayaquil');
-  const { data, loading, error } = useFetchData(selectedOption);
+  // 2. Cambiamos el estado inicial a un objeto LocationData
+  const [location, setLocation] = useState<LocationData>({
+      name: 'Guayaquil',
+      latitude: -2.1962,
+      longitude: -79.8862,
+      country: 'Ecuador'
+  });
+  const { data, loading, error } = useFetchData(location.latitude, location.longitude);
 
   const { description: weatherDescription, bgImage } = getWeatherInfo(
     data?.current.weather_code,
@@ -113,14 +119,14 @@ export default function App() {
             <Grid size={{ xs: 12, md: 8 }}>
               <Box sx={{ ...glassStyle, p: 3, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h3" sx={{ fontWeight: '300', color: '#fff', letterSpacing: '2px' }}>
-                  CLIMA <span style={{ fontWeight: 'bold' }}>LOCAL</span>
+                  CLIMA <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{location.name}</span>
                 </Typography>
               </Box>
             </Grid>
 
             <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ ...glassStyle, p: 3 }}>
-                <SelectorUI onOptionSelect={setSelectedOption} selectedOption={selectedOption} />
+                <SelectorUI onOptionSelect={setLocation} selectedOption={location} />
               </Box>
             </Grid>
           </Grid>

@@ -1,61 +1,246 @@
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
 
-// Defina la interfaz del prop
-interface SelectorProps {
-   onOptionSelect: (option: string) => void;
-   selectedOption: string | null;
+const AutocompleteTextField = TextField as React.ComponentType<any>;
+
+export interface LocationData {
+   name: string;
+   latitude: number;
+   longitude: number;
+   country?: string;
+   admin1?: string; 
 }
 
-// Array con las ciudades disponibles
-const CITIES = ['Guayaquil', 'Quito', 'Manta', 'Cuenca'];
+interface SelectorProps {
+   onOptionSelect: (location: LocationData) => void;
+   selectedOption: LocationData;
+}
 
-export default function Selector({ onOptionSelect, selectedOption }: SelectorProps) {
+const QUICK_LOCATIONS: LocationData[] = [
+    { name: 'Guayaquil', latitude: -2.1962, longitude: -79.8862, country: 'Ecuador' },
+    { name: 'Quito', latitude: -0.1807, longitude: -78.4678, country: 'Ecuador' },
+    { name: 'Hacienda Victoria', latitude: -2.1465, longitude: -79.6015, country: 'Ecuador' },
+];
+
+export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorProps) {
+    const [open, setOpen] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [options, setOptions] = useState<LocationData[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => {
+        setOpen(false);
+        setInputValue(''); 
+    };
+
+    useEffect(() => {
+        if (inputValue.length < 3) {
+            setOptions([]);
+            return;
+        }
+
+        const fetchCities = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${inputValue}&count=5&language=es&format=json`);
+                const data = await res.json();
+                
+                if (data.results) {
+                    const locations = data.results.map((item: any) => ({
+                        name: item.name,
+                        latitude: item.latitude,
+                        longitude: item.longitude,
+                        country: item.country,
+                        admin1: item.admin1
+                    }));
+                    setOptions(locations);
+                }
+            } catch (error) {
+                console.error("Error buscando ciudades:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const delayDebounceFn = setTimeout(() => { fetchCities(); }, 500);
+        return () => clearTimeout(delayDebounceFn);
+    }, [inputValue]);
+
     return (
        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Título pequeño y elegante con icono */}
-          <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-             <LocationOnIcon sx={{ fontSize: '1.2rem', mr: 0.5 }}/>
-             Seleccionar Ubicación
-          </Typography>
           
-          {/* Contenedor flexible para los botones */}
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-             {CITIES.map((city) => {
-                const isActive = selectedOption === city;
-                
-                return (
-                    <Button
-                        key={city}
-                        onClick={() => onOptionSelect(city)}
-                        disableElevation
-                        variant={isActive ? "contained" : "outlined"}
-                        sx={{
-                            borderRadius: '24px', // Bordes completamente redondeados (estilo píldora)
-                            textTransform: 'none', // Evita que el texto esté todo en mayúsculas
-                            fontWeight: isActive ? 'bold' : 'normal',
-                            px: 3, // Padding horizontal para que no se vean apretados
-                            
-                            // Lógica de colores estilo Glassmorphism
-                            borderColor: isActive ? 'transparent' : 'rgba(255,255,255,0.3)',
-                            bgcolor: isActive ? 'rgba(255,255,255,0.2)' : 'transparent',
+          <Button 
+            onClick={handleOpen}
+            variant="outlined"
+            startIcon={<SearchIcon />}
+            sx={{ 
+                color: 'white', 
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderRadius: '24px', 
+                py: 1.5,
+                px: 3,
+                justifyContent: 'flex-start',
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                textTransform: 'none',
+                fontSize: '1rem',
+                fontWeight: 300,
+                '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'rgba(255,255,255,0.4)',
+                }
+            }}
+          >
+            Buscar nueva ubicación...
+          </Button>
+
+          <Box>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', display: 'block', mb: 1, ml: 1, fontWeight: 'bold' }}>
+                UBICACIONES FRECUENTES
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {QUICK_LOCATIONS.map((loc, index) => (
+                    <Chip 
+                        key={index}
+                        icon={<LocationOnIcon fontSize="small" />}
+                        label={loc.name}
+                        onClick={() => onOptionSelect(loc)}
+                        sx={{ 
                             color: 'white',
+                            background: selectedOption.name === loc.name ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                            borderColor: 'rgba(255,255,255,0.2)',
                             backdropFilter: 'blur(10px)',
-                            
-                            // Efecto hover
-                            '&:hover': {
-                                bgcolor: 'rgba(255,255,255,0.35)',
-                                borderColor: 'transparent'
-                            }
+                            borderRadius: '12px',
+                            '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                            '& .MuiChip-icon': { color: 'rgba(255,255,255,0.7)' }
                         }}
-                    >
-                        {city}
-                    </Button>
-                );
-             })}
+                        variant="outlined"
+                        clickable
+                    />
+                ))}
+            </Box>
           </Box>
+
+          <Dialog 
+            open={open} 
+            onClose={handleClose}
+            fullWidth
+            maxWidth="sm"
+            disableScrollLock={true}
+            slotProps={{
+                backdrop: {
+                    sx: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        backdropFilter: 'blur(6px)',
+                    }
+                },
+                paper: {
+                    sx: {
+                        background: 'rgba(255, 255, 255, 0.1)', 
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        boxShadow: '0 24px 40px rgba(0,0,0,0.6)',
+                        color: 'white',
+                        m: 2
+                    }
+                }
+            }}
+          >
+            <DialogContent sx={{ p: 4 }}>
+                <Typography variant="h5" sx={{ color: 'white', mb: 3, fontWeight: '400', display: 'flex', alignItems: 'center' }}>
+                    <SearchIcon sx={{ mr: 1.5, opacity: 0.7 }} />
+                    Buscar ubicación
+                </Typography>
+                
+                <Autocomplete
+                    options={options}
+                    getOptionLabel={(option) => `${option.name}${option.admin1 ? ', ' + option.admin1 : ''}${option.country ? ' (' + option.country + ')' : ''}`}
+                    filterOptions={(x) => x}
+                    autoComplete
+                    includeInputInList
+                    filterSelectedOptions
+                    noOptionsText={inputValue.length < 3 ? 'Escribe al menos 3 letras...' : 'No se encontraron resultados'}
+                    onChange={(_event, newValue: LocationData | null) => {
+                        if (newValue) {
+                            onOptionSelect(newValue);
+                            handleClose();
+                        }
+                    }}
+                    onInputChange={(_event, newInputValue) => setInputValue(newInputValue)}
+                    slots={{ paper: Paper }}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                background: 'rgba(30, 30, 35, 0.95)',
+                                backdropFilter: 'blur(10px)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                mt: 1,
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                '& .MuiAutocomplete-option': {
+                                    '&[aria-selected="true"]': { backgroundColor: 'rgba(255,255,255,0.1)' },
+                                    '&.Mui-focused': { backgroundColor: 'rgba(255,255,255,0.08)' },
+                                }
+                            }
+                        }
+                    }}
+                    renderInput={(params) => {
+                        const inputProps = (params as any).InputProps ?? {};
+                        return (
+                            <AutocompleteTextField
+                                {...params}
+                                placeholder="Ej: Tokio, París, Milagro..."
+                                variant="outlined"
+                                autoFocus
+                                InputProps={{
+                                    ...inputProps,
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)', ml: 1 }} />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: (
+                                        <>
+                                            {loading && <CircularProgress color="inherit" size={20} sx={{ mr: 1, color: 'white' }} />}
+                                            {inputProps.endAdornment}
+                                        </>
+                                    )
+                                }}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        color: 'white',
+                                        background: 'rgba(0,0,0,0.2)',
+                                        borderRadius: '16px',
+                                        '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.4)' },
+                                        '&.Mui-focused fieldset': { borderColor: 'white', borderWidth: '1px' },
+                                    },
+                                    '& .MuiInputBase-input::placeholder': { color: 'rgba(255,255,255,0.5)', opacity: 1 },
+                                    '& .MuiAutocomplete-clearIndicator': { color: 'rgba(255,255,255,0.7)' },
+                                    '& .MuiAutocomplete-popupIndicator': { color: 'rgba(255,255,255,0.7)' }
+                                }}
+                            />
+                        );
+                    }}
+                />
+            </DialogContent>
+          </Dialog>
        </Box>
     );
 }
