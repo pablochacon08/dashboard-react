@@ -11,7 +11,7 @@ interface ChartUIProps {
    error: string | null;
 }
 
-type ChartVariable = 'temperature' | 'wind' | 'both';
+type ChartVariable = 'temperature' | 'wind' | 'precipitation' | 'humidity' | 'uv' | 'both';
 
 function processChartData(data: OpenMeteoResponse) {
    const hours = Math.min(24, data.hourly.time.length);
@@ -24,8 +24,11 @@ function processChartData(data: OpenMeteoResponse) {
    });
    const temperatures = data.hourly.temperature_2m.slice(0, hours);
    const windSpeeds = data.hourly.wind_speed_10m.slice(0, hours);
+   const precipitationProbabilities = data.hourly.precipitation_probability.slice(0, hours);
+   const humidities = data.hourly.relative_humidity_2m.slice(0, hours);
+   const uvIndexes = data.hourly.uv_index.slice(0, hours);
 
-   return { times, temperatures, windSpeeds };
+   return { times, temperatures, windSpeeds, precipitationProbabilities, humidities, uvIndexes };
 }
 
 export default function ChartUI({ data, loading, error }: ChartUIProps) {
@@ -62,21 +65,35 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
       );
    }
 
-   const { times, temperatures, windSpeeds } = processChartData(data);
+   const { times, temperatures, windSpeeds, precipitationProbabilities, humidities, uvIndexes } = processChartData(data);
 
+   // Eje izquierdo: temperatura y viento (magnitudes libres)
+   // Eje derecho: lluvia, humedad, UV (todas en escala 0-100 aprox)
    const series = [
       ...(variable === 'temperature' || variable === 'both'
-         ? [{ data: temperatures, label: 'Temperatura (°C)', color: '#5b8def' }]
+         ? [{ data: temperatures, label: 'Temperatura (°C)', color: '#5b8def', yAxisId: 'leftAxis' }]
          : []),
       ...(variable === 'wind' || variable === 'both'
-         ? [{ data: windSpeeds, label: 'Viento (km/h)', color: '#ffb84d' }]
+         ? [{ data: windSpeeds, label: 'Viento (km/h)', color: '#ffb84d', yAxisId: 'leftAxis' }]
+         : []),
+      ...(variable === 'precipitation' || variable === 'both'
+         ? [{ data: precipitationProbabilities, label: 'Prob. de lluvia (%)', color: '#4dd0e1', yAxisId: 'rightAxis' }]
+         : []),
+      ...(variable === 'humidity' || variable === 'both'
+         ? [{ data: humidities, label: 'Humedad (%)', color: '#81c784', yAxisId: 'rightAxis' }]
+         : []),
+      ...(variable === 'uv' || variable === 'both'
+         ? [{ data: uvIndexes, label: 'Índice UV', color: '#ba68c8', yAxisId: 'rightAxis' }]
          : []),
    ];
+
+   // Solo mostramos el eje derecho cuando hay alguna serie que lo use
+   const usesRightAxis = variable === 'both' || variable === 'precipitation' || variable === 'humidity' || variable === 'uv';
 
    return (
       <Box>
          <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 500, color: '#fff' }}>
-            Pronóstico: Temperatura y Viento (24h)
+            Pronóstico por hora (24h)
          </Typography>
          <ToggleButtonGroup
             value={variable}
@@ -85,6 +102,8 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
             size="small"
             sx={{
                mb: 2,
+               flexWrap: 'wrap',
+               gap: 1,
                '& .MuiToggleButton-root': {
                   color: 'rgba(255,255,255,0.7)',
                   borderColor: 'rgba(255,255,255,0.2)',
@@ -101,13 +120,20 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
          >
             <ToggleButton value="temperature">Temperatura</ToggleButton>
             <ToggleButton value="wind">Viento</ToggleButton>
-            <ToggleButton value="both">Ambos</ToggleButton>
+            <ToggleButton value="precipitation">Lluvia</ToggleButton>
+            <ToggleButton value="humidity">Humedad</ToggleButton>
+            <ToggleButton value="uv">Índice UV</ToggleButton>
+            <ToggleButton value="both">Todos</ToggleButton>
          </ToggleButtonGroup>
          <LineChart
             height={350}
             series={series}
-            xAxis={[{ scaleType: 'point', data: times }]}
-            margin={{ bottom: 40, left: 50, right: 10, top: 20 }}
+            xAxis={[{ scaleType: 'point', data: times, id: 'xAxis' }]}
+            yAxis={[
+               { id: 'leftAxis' },
+               ...(usesRightAxis ? [{ id: 'rightAxis', position: 'right' as const, max: 100 }] : []),
+            ]}
+            margin={{ bottom: 40, left: 50, right: usesRightAxis ? 50 : 10, top: 20 }}
             sx={{
                '& .MuiChartsAxis-tickLabel': {
                   fill: 'rgba(255,255,255,0.75) !important',

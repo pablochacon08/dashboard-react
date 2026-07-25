@@ -20,6 +20,9 @@ function processHourlyData(data: OpenMeteoResponse) {
       }),
       temperature: data.hourly.temperature_2m[index],
       windSpeed: data.hourly.wind_speed_10m[index],
+      precipitationProbability: data.hourly.precipitation_probability[index],
+      humidity: data.hourly.relative_humidity_2m[index],
+      uvIndex: data.hourly.uv_index[index],
    }));
 }
 
@@ -37,7 +40,7 @@ const columns: GridColDef[] = [
       field: 'temperature',
       headerName: 'Temp. (°C)',
       flex: 1,
-      minWidth: 110,
+      minWidth: 100,
       align: 'center',
       headerAlign: 'center',
       sortable: false,
@@ -47,7 +50,37 @@ const columns: GridColDef[] = [
       field: 'windSpeed',
       headerName: 'Viento (km/h)',
       flex: 1,
-      minWidth: 120,
+      minWidth: 110,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value.toFixed(1)}`,
+   },
+   {
+      field: 'precipitationProbability',
+      headerName: 'Lluvia (%)',
+      flex: 1,
+      minWidth: 100,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value}%`,
+   },
+   {
+      field: 'humidity',
+      headerName: 'Humedad (%)',
+      flex: 1,
+      minWidth: 110,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value}%`,
+   },
+   {
+      field: 'uvIndex',
+      headerName: 'Índice UV',
+      flex: 1,
+      minWidth: 100,
       align: 'center',
       headerAlign: 'center',
       sortable: false,
@@ -102,18 +135,14 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
                color: 'white',
                fontSize: '0.95rem',
                bgcolor: 'transparent',
-
-               // Fondo transparente en todos los niveles
                '& .MuiDataGrid-main': { bgcolor: 'transparent' },
                '& .MuiDataGrid-virtualScroller': {
                   bgcolor: 'transparent',
-                  scrollbarWidth: 'none', // Firefox: oculta el scroll
+                  scrollbarWidth: 'none',
                   '&::-webkit-scrollbar': {
-                     display: 'none', // Chrome, Edge, Safari: oculta el scroll
+                     display: 'none',
                   },
                },
-
-               // Encabezado
                '& .MuiDataGrid-columnHeaders': {
                   bgcolor: 'transparent !important',
                   backgroundImage: 'none',
@@ -126,14 +155,12 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
                   fontWeight: 'bold',
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   opacity: 0.7,
                },
                '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
                   outline: 'none',
                },
-
-               // Filas
                '& .MuiDataGrid-row': { bgcolor: 'transparent !important' },
                '& .MuiDataGrid-row:hover': { bgcolor: 'rgba(255,255,255,0.08) !important' },
                '& .MuiDataGrid-cell': {
@@ -141,8 +168,6 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
                },
                '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
                '& .MuiDataGrid-columnSeparator': { display: 'none' },
-
-               // Pie con paginación
                '& .MuiDataGrid-footerContainer': {
                   borderTop: '1px solid rgba(255,255,255,0.15)',
                   bgcolor: 'transparent',
