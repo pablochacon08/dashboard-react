@@ -7,7 +7,6 @@ interface UseFetchDataResult {
   error: string | null;
 }
 
-// Ahora el hook recibe coordenadas directamente
 export default function useFetchData(latitude: number, longitude: number): UseFetchDataResult {
   const [data, setData] = useState<OpenMeteoResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,9 +14,8 @@ export default function useFetchData(latitude: number, longitude: number): UseFe
 
   useEffect(() => {
     const controller = new AbortController();
-    
-    // Inyectamos la latitud y longitud en la URL
-    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,is_day&hourly=temperature_2m,wind_speed_10m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
+
+    const URL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,precipitation,weather_code,is_day&hourly=temperature_2m,wind_speed_10m,weather_code,precipitation_probability,relative_humidity_2m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
 
     const fetchData = async () => {
       setLoading(true);
@@ -45,7 +43,7 @@ export default function useFetchData(latitude: number, longitude: number): UseFe
     void fetchData();
 
     return () => controller.abort();
-  }, [latitude, longitude]); // El efecto se dispara cuando cambian las coordenadas
+  }, [latitude, longitude]);
 
   return { data, loading, error };
 }
