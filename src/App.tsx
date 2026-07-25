@@ -186,7 +186,7 @@ export default function App() {
           {data && (
             <Grid size={12}>
               <Box sx={{ ...glassStyle, p: 4 }}>
-                <Typography variant="h6" sx={{ color: '#fff', mb: 3, fontWeight: '300' }}>
+                <Typography variant="h6" sx={{ color: '#fff', mb: 3, fontWeight: '500',letterSpacing: '0.5px',textAlign: 'center' }}>
                   Información adicional
                 </Typography>
                 <Grid container spacing={3}>
