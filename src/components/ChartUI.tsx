@@ -43,7 +43,7 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
    if (loading && !data) {
       return (
          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: 'white' }} />
          </Box>
       );
    }
@@ -66,16 +66,16 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
 
    const series = [
       ...(variable === 'temperature' || variable === 'both'
-         ? [{ data: temperatures, label: 'Temperatura (°C)' }]
+         ? [{ data: temperatures, label: 'Temperatura (°C)', color: '#5b8def' }]
          : []),
       ...(variable === 'wind' || variable === 'both'
-         ? [{ data: windSpeeds, label: 'Viento (km/h)' }]
+         ? [{ data: windSpeeds, label: 'Viento (km/h)', color: '#ffb84d' }]
          : []),
    ];
 
    return (
       <Box>
-         <Typography variant="h5" component="div" sx={{ mb: 2 }}>
+         <Typography variant="h6" component="div" sx={{ mb: 2, fontWeight: 500, color: '#fff' }}>
             Pronóstico: Temperatura y Viento (24h)
          </Typography>
          <ToggleButtonGroup
@@ -83,7 +83,21 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
             exclusive
             onChange={handleVariableChange}
             size="small"
-            sx={{ mb: 2 }}
+            sx={{
+               mb: 2,
+               '& .MuiToggleButton-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  borderRadius: '20px !important',
+                  px: 2,
+               },
+               '& .MuiToggleButton-root.Mui-selected': {
+                  color: '#fff',
+                  bgcolor: 'rgba(255,255,255,0.15)',
+               },
+            }}
          >
             <ToggleButton value="temperature">Temperatura</ToggleButton>
             <ToggleButton value="wind">Viento</ToggleButton>
@@ -94,6 +108,25 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
             series={series}
             xAxis={[{ scaleType: 'point', data: times }]}
             margin={{ bottom: 40, left: 50, right: 10, top: 20 }}
+            sx={{
+               '& .MuiChartsAxis-tickLabel': {
+                  fill: 'rgba(255,255,255,0.75) !important',
+                  fontSize: '0.75rem',
+               },
+               '& .MuiChartsAxis-line': {
+                  stroke: 'rgba(255,255,255,0.25) !important',
+               },
+               '& .MuiChartsAxis-tick': {
+                  stroke: 'rgba(255,255,255,0.25) !important',
+               },
+               '& .MuiChartsLegend-series text': {
+                  fill: 'rgba(255,255,255,0.9) !important',
+               },
+               '& .MuiChartsGrid-line': {
+                  stroke: 'rgba(255,255,255,0.08) !important',
+               },
+            }}
+            grid={{ horizontal: true }}
          />
       </Box>
    );

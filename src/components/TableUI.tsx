@@ -31,6 +31,7 @@ const columns: GridColDef[] = [
       minWidth: 90,
       align: 'left',
       headerAlign: 'left',
+      sortable: false,
    },
    {
       field: 'temperature',
@@ -39,6 +40,7 @@ const columns: GridColDef[] = [
       minWidth: 110,
       align: 'center',
       headerAlign: 'center',
+      sortable: false,
       valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value.toFixed(1)}°`,
    },
    {
@@ -48,6 +50,7 @@ const columns: GridColDef[] = [
       minWidth: 120,
       align: 'center',
       headerAlign: 'center',
+      sortable: false,
       valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value.toFixed(1)}`,
    },
 ];
@@ -80,15 +83,7 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
    const rows = processHourlyData(data);
 
    return (
-      <Box
-         sx={{
-            height: 350,
-            width: '100%',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.08)',
-         }}
-      >
+      <Box sx={{ height: 350, width: '100%' }}>
          <DataGrid
             rows={rows}
             columns={columns}
@@ -102,33 +97,55 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
             pageSizeOptions={[5]}
             disableRowSelectionOnClick
             disableColumnMenu
-            getRowClassName={(params) => (params.indexRelativeToCurrentPage % 2 === 0 ? 'row-even' : 'row-odd')}
             sx={{
                border: 0,
                color: 'white',
                fontSize: '0.95rem',
-               '& .MuiDataGrid-columnHeaders': {
-                  bgcolor: 'rgba(255,255,255,0.06)',
-                  borderBottom: '1px solid rgba(255,255,255,0.15)',
-                  '& .MuiDataGrid-columnHeaderTitle': {
-                     fontWeight: 'bold',
-                     letterSpacing: '0.5px',
-                     textTransform: 'uppercase',
-                     fontSize: '0.75rem',
-                     opacity: 0.8,
+               bgcolor: 'transparent',
+
+               // Fondo transparente en todos los niveles
+               '& .MuiDataGrid-main': { bgcolor: 'transparent' },
+               '& .MuiDataGrid-virtualScroller': {
+                  bgcolor: 'transparent',
+                  scrollbarWidth: 'none', // Firefox: oculta el scroll
+                  '&::-webkit-scrollbar': {
+                     display: 'none', // Chrome, Edge, Safari: oculta el scroll
                   },
                },
-               '& .MuiDataGrid-row.row-even': { bgcolor: 'rgba(255,255,255,0.02)' },
-               '& .MuiDataGrid-row.row-odd': { bgcolor: 'transparent' },
+
+               // Encabezado
+               '& .MuiDataGrid-columnHeaders': {
+                  bgcolor: 'transparent !important',
+                  backgroundImage: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.2)',
+               },
+               '& .MuiDataGrid-columnHeader': {
+                  bgcolor: 'transparent !important',
+               },
+               '& .MuiDataGrid-columnHeaderTitle': {
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  fontSize: '0.75rem',
+                  opacity: 0.7,
+               },
+               '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
+                  outline: 'none',
+               },
+
+               // Filas
+               '& .MuiDataGrid-row': { bgcolor: 'transparent !important' },
                '& .MuiDataGrid-row:hover': { bgcolor: 'rgba(255,255,255,0.08) !important' },
                '& .MuiDataGrid-cell': {
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: '1px solid rgba(255,255,255,0.08)',
                },
                '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
                '& .MuiDataGrid-columnSeparator': { display: 'none' },
+
+               // Pie con paginación
                '& .MuiDataGrid-footerContainer': {
-                  borderTop: '1px solid rgba(255,255,255,0.1)',
-                  bgcolor: 'rgba(255,255,255,0.03)',
+                  borderTop: '1px solid rgba(255,255,255,0.15)',
+                  bgcolor: 'transparent',
                },
                '& .MuiTablePagination-root': { color: 'white' },
                '& .MuiTablePagination-selectIcon': { color: 'white' },
