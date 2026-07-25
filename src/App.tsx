@@ -93,16 +93,6 @@ function getUvLabel(uv: number): string {
   return 'Extremo';
 }
 
-function getCountryName(countryCode: string | undefined): string {
-  if (!countryCode) return '';
-  try {
-    const regionNames = new Intl.DisplayNames(['es'], { type: 'region' });
-    return regionNames.of(countryCode) ?? '';
-  } catch {
-    return '';
-  }
-}
-
 export default function App() {
   const [location, setLocation] = useState<LocationData>({
       name: 'Guayaquil',
