@@ -76,13 +76,31 @@ function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefin
   };
 }
 
+function getUvLabel(uv: number): string {
+  if (uv < 3) return 'Bajo';
+  if (uv < 6) return 'Moderado';
+  if (uv < 8) return 'Alto';
+  if (uv < 11) return 'Muy alto';
+  return 'Extremo';
+}
+
+function getCountryName(countryCode: string | undefined): string {
+  if (!countryCode) return '';
+  try {
+    const regionNames = new Intl.DisplayNames(['es'], { type: 'region' });
+    return regionNames.of(countryCode) ?? '';
+  } catch {
+    return '';
+  }
+}
+
 export default function App() {
-  // 2. Cambiamos el estado inicial a un objeto LocationData
   const [location, setLocation] = useState<LocationData>({
       name: 'Guayaquil',
       latitude: -2.1962,
       longitude: -79.8862,
-      country: 'Ecuador'
+      country: 'Ecuador',
+      countryCode: 'EC'
   });
   const { data, loading, error } = useFetchData(location.latitude, location.longitude);
 
@@ -120,6 +138,9 @@ export default function App() {
               <Box sx={{ ...glassStyle, p: 3, display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="h3" sx={{ fontWeight: '300', color: '#fff', letterSpacing: '2px' }}>
                   CLIMA <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>{location.name}</span>
+                  {location.countryCode && (
+                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>, {getCountryName(location.countryCode)}</span>
+                  )}
                 </Typography>
               </Box>
             </Grid>
@@ -168,16 +189,16 @@ export default function App() {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <IndicatorUI icon={<WbSunnyIcon />} title='Condición' description={weatherDescription} descriptionVariant="h5" />
+                    <IndicatorUI icon={<WbSunnyIcon />} title='Condición' description={weatherDescription} descriptionVariant="subtitle1" />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <IndicatorUI icon={<WbTwilightIcon />} title='Amanecer / Atardecer' description={`${data.daily.sunrise[0].split('T')[1]} - ${data.daily.sunset[0].split('T')[1]}`} descriptionVariant="h6" />
+                    <IndicatorUI icon={<WbTwilightIcon />} title='Amanecer / Atardecer' description={`${data.daily.sunrise[0].split('T')[1]} - ${data.daily.sunset[0].split('T')[1]}`} descriptionVariant="subtitle1" />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <IndicatorUI icon={<ThermostatIcon />} title='Máx / Mín hoy' description={`${data.daily.temperature_2m_max[0]}° / ${data.daily.temperature_2m_min[0]}°`} descriptionVariant="h5" />
+                    <IndicatorUI icon={<ThermostatIcon />} title='Temperatura' description={`Máx ${data.daily.temperature_2m_max[0]}° · Mín ${data.daily.temperature_2m_min[0]}°`} descriptionVariant="subtitle1" />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <IndicatorUI icon={<UmbrellaIcon />} title='Índice UV máx' description={`${data.daily.uv_index_max[0]}`} descriptionVariant="h5" />
+                    <IndicatorUI icon={<UmbrellaIcon />} title='Índice UV máx' description={`${data.daily.uv_index_max[0]} · ${getUvLabel(data.daily.uv_index_max[0])}`} descriptionVariant="subtitle1" />
                   </Grid>
                 </Grid>
               </Box>
