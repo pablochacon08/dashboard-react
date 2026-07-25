@@ -14,35 +14,34 @@ function processHourlyData(data: OpenMeteoResponse) {
    const hours = Math.min(24, data.hourly.time.length);
    return data.hourly.time.slice(0, hours).map((time, index) => ({
       id: index,
-      time: new Date(time).toLocaleString('sv-SE', {
-         year: 'numeric',
-         month: '2-digit',
-         day: '2-digit',
+      time: new Date(time).toLocaleTimeString('es-EC', {
          hour: '2-digit',
          minute: '2-digit',
-      }).replace(' ', ' '),
+      }),
       temperature: data.hourly.temperature_2m[index],
       windSpeed: data.hourly.wind_speed_10m[index],
    }));
 }
 
-const columns: GridColDef[] = [ 
-   { field: 'id', headerName: 'ID', width: 60 },
+const columns: GridColDef[] = [
    {
       field: 'time',
       headerName: 'Hora',
-      width: 170,
+      flex: 1,
+      minWidth: 90,
    },
    {
       field: 'temperature',
-      headerName: 'Temperatura (°C)',
-      width: 150,
+      headerName: 'Temp. (°C)',
+      flex: 1,
+      minWidth: 110,
       valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value.toFixed(1)}`,
    },
    {
       field: 'windSpeed',
       headerName: 'Viento (km/h)',
-      width: 150,
+      flex: 1,
+      minWidth: 120,
       valueFormatter: (value: number | null | undefined) => value === null || value === undefined ? '-' : `${value.toFixed(1)}`,
    },
 ];
@@ -88,6 +87,19 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
             }}
             pageSizeOptions={[5]}
             disableRowSelectionOnClick
+            disableColumnMenu
+            sx={{
+               border: 0,
+               color: 'white',
+               '& .MuiDataGrid-cell': { borderBottom: '1px solid rgba(255,255,255,0.1)' },
+               '& .MuiDataGrid-columnHeaders': {
+                  borderBottom: '1px solid rgba(255,255,255,0.2)',
+                  '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 'bold' },
+               },
+               '& .MuiDataGrid-footerContainer': { borderTop: 'none' },
+               '& .MuiTablePagination-root': { color: 'white' },
+               '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
+            }}
          />
       </Box>
    );

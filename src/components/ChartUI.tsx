@@ -17,10 +17,7 @@ function processChartData(data: OpenMeteoResponse) {
    const hours = Math.min(24, data.hourly.time.length);
    const times = data.hourly.time.slice(0, hours).map(time => {
       const date = new Date(time);
-      return date.toLocaleString('sv-SE', {
-         year: 'numeric',
-         month: '2-digit',
-         day: '2-digit',
+      return date.toLocaleTimeString('es-EC', {
          hour: '2-digit',
          minute: '2-digit',
       });

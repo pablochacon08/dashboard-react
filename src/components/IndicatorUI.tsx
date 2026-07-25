@@ -8,35 +8,33 @@ import React from 'react';
 interface IndicatorUIProps {
     title?: string;
     description?: string;
-    icon: React.ReactNode; 
+    icon: React.ReactNode;
+    descriptionVariant?: 'h3' | 'h5' | 'h6';
 }
 
-export default function IndicatorUI(props: IndicatorUIProps) {
+export default function IndicatorUI({ title, description, icon, descriptionVariant = 'h3' }: IndicatorUIProps) {
     return (
-        <Card elevation={0} sx={{ 
-            height: '100%', 
-            background: 'rgba(255, 255, 255, 0.05)', // Cristal
+        <Card elevation={0} sx={{
+            height: '100%',
+            background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '24px', 
+            borderRadius: '24px',
             color: 'white'
         }}>
             <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', px: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    {/* Icono con fondo semitransparente */}
                     <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.1)', width: 48, height: 48, mr: 2, color: 'white' }}>
-                        {props.icon}
+                        {icon}
                     </Avatar>
-                    
-                    {/* Texto grande (Número) */}
-                    <Typography variant="h3" component="div" sx={{ fontWeight: '400' }}>
-                        {props.description}
+
+                    <Typography variant={descriptionVariant} component="div" sx={{ fontWeight: '400' }}>
+                        {description}
                     </Typography>
                 </Box>
-                
-                {/* Título pequeño */}
+
                 <Typography variant="overline" component="p" sx={{ opacity: 0.7, fontWeight: 'bold', ml: 8, letterSpacing: '1px' }}>
-                    {props.title}
+                    {title}
                 </Typography>
             </CardContent>
         </Card>
