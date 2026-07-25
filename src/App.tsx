@@ -16,7 +16,7 @@ import UmbrellaIcon from '@mui/icons-material/Umbrella';
 
 const darkTheme = createTheme({
   palette: { mode: 'dark' },
-  typography: { fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif' },
+  typography: { fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif' },
 });
 
 function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefined) {
@@ -142,7 +142,7 @@ export default function App() {
 
           <Grid container spacing={4} sx={{ mb: 4 }}>
             <Grid size={{ xs: 12, lg: 7 }}>
-              <Box sx={{ ...glassStyle, p: 4, height: '100%' }}>
+              <Box sx={{ ...glassStyle, p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
                 <ChartUI data={data} loading={loading} error={error} />
               </Box>
             </Grid>
@@ -171,7 +171,7 @@ export default function App() {
                     <IndicatorUI icon={<ThermostatIcon />} title='Máx / Mín hoy' description={`${data.daily.temperature_2m_max[0]}° / ${data.daily.temperature_2m_min[0]}°`} descriptionVariant="h5" />
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <IndicatorUI icon={<UmbrellaIcon />} title='Índice UV máx' description={`${data.daily.uv_index_max[0]}`} />
+                    <IndicatorUI icon={<UmbrellaIcon />} title='Índice UV máx' description={`${data.daily.uv_index_max[0]}`} descriptionVariant="h5" />
                   </Grid>
                 </Grid>
               </Box>

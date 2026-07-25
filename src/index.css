@@ -107,3 +107,10 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.MuiPopper-root,
+.MuiChartsTooltip-root,
+.MuiChartsTooltip-table,
+[role="tooltip"] {
+  z-index: 9999 !important;
+}
