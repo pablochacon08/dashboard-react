@@ -31,11 +31,11 @@ interface SelectorProps {
 
 // Ubicaciones de acceso rápido con climas extremos para probar los fondos
 const QUICK_LOCATIONS: LocationData[] = [
-    { name: 'Guayaquil', latitude: -2.1962, longitude: -79.8862, country: 'Ecuador', admin1: 'Guayas' }, // Clima Tropical / Húmedo
-    { name: 'Ushuaia', latitude: -54.8019, longitude: -68.3030, country: 'Argentina', admin1: 'Tierra del Fuego' }, // Frío / Posible Nieve
-    { name: 'Dubái', latitude: 25.2048, longitude: 55.2708, country: 'Emiratos Árabes Unidos', admin1: 'Dubai' }, // Despejado / Calor Extremo
-    { name: 'Quibdó', latitude: 5.6947, longitude: -76.6611, country: 'Colombia', admin1: 'Chocó' }, // Lluvia Extrema / Constante
-    { name: 'Cuenca', latitude: -2.9006, longitude: -79.0059, country: 'Ecuador', admin1: 'Azuay' }, // Clima Andino / Variable
+   { name: 'Guayaquil', latitude: -2.1962, longitude: -79.8862, country: 'Ecuador', admin1: 'Guayas' }, 
+   { name: 'Ushuaia', latitude: -54.8019, longitude: -68.3030, country: 'Argentina', admin1: 'Tierra del Fuego' }, 
+   { name: 'Dubái', latitude: 25.2048, longitude: 55.2708, country: 'Emiratos Árabes Unidos', admin1: 'Dubai' }, 
+   { name: 'Quito', latitude: -0.2298, longitude: -78.5250, country: 'Ecuador', admin1: 'Pichincha' }, 
+   { name: 'Singapur', latitude: 1.3521, longitude: 103.8198, country: 'Singapur', admin1: 'Singapur' } 
 ];
 
 export default function SelectorUI({ onOptionSelect, selectedOption }: SelectorProps) {

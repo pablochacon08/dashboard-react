@@ -21,6 +21,7 @@ const darkTheme = createTheme({
 
 function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefined, temperature: number | undefined) {
   const day = isDay !== 0;
+  const temp = temperature !== undefined ? temperature : 20;
 
   if (weatherCode === undefined) {
     return {
@@ -29,59 +30,58 @@ function getWeatherInfo(weatherCode: number | undefined, isDay: number | undefin
     };
   }
 
-  // Si la temperatura es menor o igual a 4 grados, forzamos imagen gélida
-  if (temperature !== undefined && temperature <= 4) {
-    return {
-      // Si de paso está nevando según el código, decimos 'Nieve', si no, 'Frío Extremo'
-      description: [71, 73, 75, 77, 85, 86].includes(weatherCode) ? 'Nieve' : 'Frío Extremo',
-      bgImage: 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?q=80&w=2000',
-    };
-  }
-
-  if (weatherCode === 0 || weatherCode === 1) {
-    return {
-      description: 'Despejado',
-      bgImage: day
-        ? 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=2065'
-        : 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?q=80&w=2070',
-    };
-  }
-  if (weatherCode === 2 || weatherCode === 3) {
-    return {
-      description: 'Nublado',
-      bgImage: day
-        ? 'https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=2070'
-        : 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2069',
-    };
-  }
-  if (weatherCode === 45 || weatherCode === 48) {
-    return {
-      description: 'Niebla',
-      bgImage: 'https://images.unsplash.com/photo-1487621167305-5d248087c724?q=80&w=2070',
-    };
-  }
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) {
-    return {
-      description: 'Lluvia',
-      bgImage: 'https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=2070',
-    };
+  // PRIORIDAD 1: EVENTOS CLIMÁTICOS (El agua o eventos extremos)
+  if ([95, 96, 99].includes(weatherCode)) {
+    return { description: 'Tormenta eléctrica', bgImage: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?q=80&w=2070' };
   }
   if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-    return {
-      description: 'Nieve',
-      bgImage: 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?q=80&w=2000',
-    };
+    return { description: 'Nieve', bgImage: 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?q=80&w=2000' };
   }
-  if ([95, 96, 99].includes(weatherCode)) {
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(weatherCode)) {
+    return { description: 'Lluvia', bgImage: 'https://images.unsplash.com/photo-1519692933481-e162a57d6721?q=80&w=2070' };
+  }
+  if (weatherCode === 45 || weatherCode === 48) {
+    return { description: 'Niebla', bgImage: 'https://images.unsplash.com/photo-1487621167305-5d248087c724?q=80&w=2070' };
+  }
+
+  // PRIORIDAD 2: LA TEMPERATURA 
+  
+  let baseText = 'Clima variable';
+  if (weatherCode === 0 || weatherCode === 1) baseText = 'Despejado';
+  if (weatherCode === 2 || weatherCode === 3) baseText = 'Nublado';
+  
+  // FRIO EXTREMO (4°C o menos)
+  if (temp <= 4) {
     return {
-      description: 'Tormenta eléctrica',
-      bgImage: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?q=80&w=2070',
+      description: `${baseText} (Frío extremo)`,
+      bgImage: 'https://images.unsplash.com/photo-1478265409131-1f65c88f965c?q=80&w=2000', // Imagen glacial/escarchada
     };
   }
 
+  // FRÍO NORMAL (5°C a 15°C)
+  if (temp > 4 && temp <= 15) {
+    return {
+      description: `${baseText} y fresco`,
+      bgImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000', // Paisaje de montaña fría, tonos azulados
+    };
+  }
+
+  // CALOR (28°C o más)
+  if (temp >= 28) {
+    return {
+      description: `${baseText} (Caluroso)`,
+      bgImage: day 
+        ? 'https://images.unsplash.com/photo-1504386106331-3e4e71712b38?q=80&w=2000' // Sol fuerte/desierto
+        : 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?q=80&w=2070', // Noche despejada calurosa
+    };
+  }
+
+  // TEMPLADO (16°C a 27°C) - Clima ideal
   return {
-    description: 'Clima variable',
-    bgImage: 'https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=2070',
+    description: baseText, 
+    bgImage: day
+      ? 'https://images.unsplash.com/photo-1501630834273-4b5604d2ee31?q=80&w=2070' // Paisaje de día agradable
+      : 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2069', // Noche tranquila
   };
 }
 
