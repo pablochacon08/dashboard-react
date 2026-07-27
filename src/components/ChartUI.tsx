@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
-import { CircularProgress, Box, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { CircularProgress, Box, ToggleButtonGroup, ToggleButton, useMediaQuery, useTheme } from '@mui/material';
 import { type OpenMeteoResponse } from '../types/DashboardTypes';
 
 interface ChartUIProps {
@@ -33,6 +33,9 @@ function processChartData(data: OpenMeteoResponse) {
 
 export default function ChartUI({ data, loading, error }: ChartUIProps) {
    const [variable, setVariable] = useState<ChartVariable>('both');
+   const theme = useTheme();
+   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));   // < 600px (celulares)
+   const isTablet = useMediaQuery(theme.breakpoints.down('md'));   // < 900px (incluye tablets)
 
    const handleVariableChange = (
       _event: React.MouseEvent<HTMLElement>,
@@ -67,8 +70,6 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
 
    const { times, temperatures, windSpeeds, precipitationProbabilities, humidities, uvIndexes } = processChartData(data);
 
-   // Eje izquierdo: temperatura y viento (magnitudes libres)
-   // Eje derecho: lluvia, humedad, UV (todas en escala 0-100 aprox)
    const series = [
       ...(variable === 'temperature' || variable === 'both'
          ? [{ data: temperatures, label: 'Temperatura (°C)', color: '#5b8def', yAxisId: 'leftAxis' }]
@@ -87,7 +88,6 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
          : []),
    ];
 
-   // Solo mostramos el eje derecho cuando hay alguna serie que lo use
    const usesRightAxis = variable === 'both' || variable === 'precipitation' || variable === 'humidity' || variable === 'uv';
 
    return (
@@ -128,16 +128,30 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
          <LineChart
             height={350}
             series={series}
-            xAxis={[{ scaleType: 'point', data: times, id: 'xAxis' }]}
+            xAxis={[{
+               scaleType: 'point',
+               data: times,
+               id: 'xAxis',
+               tickLabelInterval: isMobile
+                  ? (_value, index) => index % 4 === 0
+                  : isTablet
+                  ? (_value, index) => index % 2 === 0
+                  : undefined,
+            }]}
             yAxis={[
                { id: 'leftAxis' },
                ...(usesRightAxis ? [{ id: 'rightAxis', position: 'right' as const, max: 100 }] : []),
             ]}
-            margin={{ bottom: 40, left: 50, right: usesRightAxis ? 50 : 10, top: 20 }}
+            margin={{
+               bottom: 40,
+               left: isMobile ? 30 : isTablet ? 40 : 50,
+               right: isMobile ? (usesRightAxis ? 30 : 5) : isTablet ? (usesRightAxis ? 40 : 8) : (usesRightAxis ? 50 : 10),
+               top: 20,
+            }}
             sx={{
                '& .MuiChartsAxis-tickLabel': {
                   fill: 'rgba(255,255,255,0.75) !important',
-                  fontSize: '0.75rem',
+                  fontSize: isMobile ? '0.65rem' : isTablet ? '0.7rem' : '0.75rem',
                },
                '& .MuiChartsAxis-line': {
                   stroke: 'rgba(255,255,255,0.25) !important',
@@ -147,6 +161,7 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
                },
                '& .MuiChartsLegend-series text': {
                   fill: 'rgba(255,255,255,0.9) !important',
+                  fontSize: isMobile ? '0.7rem !important' : isTablet ? '0.75rem !important' : undefined,
                },
                '& .MuiChartsGrid-line': {
                   stroke: 'rgba(255,255,255,0.08) !important',
