@@ -16,7 +16,8 @@ import {
 
 import IndicatorUI from './components/IndicatorUI';
 import TableUI from './components/TableUI';
-import ChartUI from './components/ChartUI';
+// IMPORTANTE: Importamos el componente y el tipo ChartVariable
+import ChartUI, { type ChartVariable } from './components/ChartUI'; 
 import SelectorUI, {
   type LocationData,
 } from './components/SelectorUI';
@@ -246,6 +247,9 @@ function getUvLabel(uv: number): string {
 export default function App() {
   const [location, setLocation] =
     useState<LocationData>(getInitialLocation);
+
+  // NUEVO ESTADO: Controla la métrica seleccionada para sincronizar el gráfico y la tabla
+  const [activeMetric, setActiveMetric] = useState<ChartVariable>('both');
 
   const {
     data,
@@ -548,10 +552,13 @@ export default function App() {
                   zIndex: 2,
                 }}
               >
+                {/* PASAMOS LAS PROPS DE ESTADO AL GRÁFICO */}
                 <ChartUI
                   data={data}
                   loading={loading}
                   error={error}
+                  activeMetric={activeMetric}
+                  setActiveMetric={setActiveMetric}
                 />
               </Box>
             </Grid>
@@ -567,10 +574,12 @@ export default function App() {
                   height: '100%',
                 }}
               >
+                {/* PASAMOS EL ESTADO A LA TABLA */}
                 <TableUI
                   data={data}
                   loading={loading}
                   error={error}
+                  activeMetric={activeMetric}
                 />
               </Box>
             </Grid>

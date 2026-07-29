@@ -1,17 +1,19 @@
-import { useState } from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import { CircularProgress, Box, ToggleButtonGroup, ToggleButton, useMediaQuery, useTheme } from '@mui/material';
 import { type OpenMeteoResponse } from '../types/DashboardTypes';
 
+// Exportamos el tipo para que App.tsx lo pueda usar
+export type ChartVariable = 'temperature' | 'wind' | 'precipitation' | 'humidity' | 'uv' | 'both';
+
 interface ChartUIProps {
    data: OpenMeteoResponse | null;
    loading: boolean;
    error: string | null;
+   activeMetric: ChartVariable; // <-- Recibe la métrica activa
+   setActiveMetric: (metric: ChartVariable) => void; // <-- Recibe la función para actualizarla
 }
-
-type ChartVariable = 'temperature' | 'wind' | 'precipitation' | 'humidity' | 'uv' | 'both';
 
 function processChartData(data: OpenMeteoResponse) {
    const hours = Math.min(24, data.hourly.time.length);
@@ -31,8 +33,7 @@ function processChartData(data: OpenMeteoResponse) {
    return { times, temperatures, windSpeeds, precipitationProbabilities, humidities, uvIndexes };
 }
 
-export default function ChartUI({ data, loading, error }: ChartUIProps) {
-   const [variable, setVariable] = useState<ChartVariable>('both');
+export default function ChartUI({ data, loading, error, activeMetric, setActiveMetric }: ChartUIProps) {
    const theme = useTheme();
    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));   // < 600px (celulares)
    const isTablet = useMediaQuery(theme.breakpoints.down('md'));   // < 900px (incluye tablets)
@@ -42,7 +43,7 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
       newVariable: ChartVariable | null
    ) => {
       if (newVariable !== null) {
-         setVariable(newVariable);
+         setActiveMetric(newVariable); // <-- Actualiza el estado global en App.tsx
       }
    };
 
@@ -71,24 +72,24 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
    const { times, temperatures, windSpeeds, precipitationProbabilities, humidities, uvIndexes } = processChartData(data);
 
    const series = [
-      ...(variable === 'temperature' || variable === 'both'
+      ...(activeMetric === 'temperature' || activeMetric === 'both'
          ? [{ data: temperatures, label: 'Temperatura (°C)', color: '#5b8def', yAxisId: 'leftAxis' }]
          : []),
-      ...(variable === 'wind' || variable === 'both'
+      ...(activeMetric === 'wind' || activeMetric === 'both'
          ? [{ data: windSpeeds, label: 'Viento (km/h)', color: '#ffb84d', yAxisId: 'leftAxis' }]
          : []),
-      ...(variable === 'precipitation' || variable === 'both'
+      ...(activeMetric === 'precipitation' || activeMetric === 'both'
          ? [{ data: precipitationProbabilities, label: 'Prob. de lluvia (%)', color: '#4dd0e1', yAxisId: 'rightAxis' }]
          : []),
-      ...(variable === 'humidity' || variable === 'both'
+      ...(activeMetric === 'humidity' || activeMetric === 'both'
          ? [{ data: humidities, label: 'Humedad (%)', color: '#81c784', yAxisId: 'rightAxis' }]
          : []),
-      ...(variable === 'uv' || variable === 'both'
+      ...(activeMetric === 'uv' || activeMetric === 'both'
          ? [{ data: uvIndexes, label: 'Índice UV', color: '#ba68c8', yAxisId: 'rightAxis' }]
          : []),
    ];
 
-   const usesRightAxis = variable === 'both' || variable === 'precipitation' || variable === 'humidity' || variable === 'uv';
+   const usesRightAxis = activeMetric === 'both' || activeMetric === 'precipitation' || activeMetric === 'humidity' || activeMetric === 'uv';
 
    return (
       <Box>
@@ -96,7 +97,7 @@ export default function ChartUI({ data, loading, error }: ChartUIProps) {
             Pronóstico por hora (24h)
          </Typography>
          <ToggleButtonGroup
-            value={variable}
+            value={activeMetric}
             exclusive
             onChange={handleVariableChange}
             size="small"

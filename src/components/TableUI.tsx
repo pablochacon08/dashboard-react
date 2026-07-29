@@ -9,6 +9,7 @@ interface TableUIProps {
    data: OpenMeteoResponse | null;
    loading: boolean;
    error: string | null;
+   activeMetric: string; // <-- NUEVO: Recibe la métrica activa
 }
 
 function processHourlyData(data: OpenMeteoResponse) {
@@ -28,69 +29,7 @@ function processHourlyData(data: OpenMeteoResponse) {
    }));
 }
 
-const columns: GridColDef[] = [
-   {
-      field: 'time',
-      headerName: 'Hora',
-      flex: 0.8,
-      minWidth: 50,
-      align: 'center', 
-      headerAlign: 'center', 
-      sortable: false,
-   },
-   {
-      field: 'temperature',
-      headerName: 'Temp',
-      flex: 1,
-      minWidth: 50,
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      valueFormatter: (value: number | null | undefined) => value == null ? '-' : `${value.toFixed(1)}°`,
-   },
-   {
-      field: 'windSpeed',
-      headerName: 'Viento (km/h)', 
-      flex: 1.5, 
-      minWidth: 90, 
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      valueFormatter: (value: number | null | undefined) => value == null ? '-' : `${value.toFixed(1)}`, 
-   },
-   {
-      field: 'precipitationProbability',
-      headerName: 'Lluvia',
-      flex: 1,
-      minWidth: 55,
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      valueFormatter: (value: number | null | undefined) => value == null ? '-' : `${value}%`,
-   },
-   {
-      field: 'humidity',
-      headerName: 'Hum',
-      flex: 0.8,
-      minWidth: 45,
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      valueFormatter: (value: number | null | undefined) => value == null ? '-' : `${value}%`,
-   },
-   {
-      field: 'uvIndex',
-      headerName: 'UV',
-      flex: 0.7,
-      minWidth: 40,
-      align: 'center',
-      headerAlign: 'center',
-      sortable: false,
-      valueFormatter: (value: number | null | undefined) => value == null ? '-' : `${value.toFixed(1)}`,
-   },
-];
-
-export default function TableUI({ data, loading, error }: TableUIProps) {
+export default function TableUI({ data, loading, error, activeMetric }: TableUIProps) {
    if (loading && !data) {
       return (
          <Box sx={{ height: '100%', minHeight: 350, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -116,6 +55,113 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
    }
 
    const rows = processHourlyData(data);
+
+   // --- LÓGICA DE ATENUACIÓN VISUAL ---
+   const isColActive = (metricName: string) => {
+      return activeMetric === 'both' || activeMetric === metricName;
+   };
+
+   const getDynamicStyle = (metricName: string, color: string) => {
+      const isActive = isColActive(metricName);
+      return {
+         color: isActive ? color : 'rgba(255, 255, 255, 0.25)', // Se apaga si no está seleccionada
+         fontWeight: isActive ? 600 : 400,
+         transition: 'color 0.3s ease, font-weight 0.3s ease',
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         width: '100%',
+         height: '100%',
+      };
+   };
+
+   // Las columnas se mueven adentro del componente para poder leer activeMetric y usar getDynamicStyle
+   const columns: GridColDef[] = [
+      {
+         field: 'time',
+         headerName: 'Hora',
+         flex: 0.8,
+         minWidth: 50,
+         align: 'center', 
+         headerAlign: 'center', 
+         sortable: false,
+         renderCell: (params) => (
+            <div style={{ color: 'white', fontWeight: 600, display: 'flex', justifyContent: 'center', width: '100%' }}>
+               {params.value}
+            </div>
+         )
+      },
+      {
+         field: 'temperature',
+         headerName: 'Temp',
+         flex: 1,
+         minWidth: 50,
+         align: 'center',
+         headerAlign: 'center',
+         sortable: false,
+         renderCell: (params) => (
+            <div style={getDynamicStyle('temperature', '#90caf9')}>
+               {params.value == null ? '-' : `${params.value.toFixed(1)}°`}
+            </div>
+         )
+      },
+      {
+         field: 'windSpeed',
+         headerName: 'Viento (km/h)', 
+         flex: 1.5, 
+         minWidth: 90, 
+         align: 'center',
+         headerAlign: 'center',
+         sortable: false,
+         renderCell: (params) => (
+            <div style={getDynamicStyle('wind', '#ffcc80')}>
+               {params.value == null ? '-' : (params.value as number).toFixed(1)}
+            </div>
+         )
+      },
+      {
+         field: 'precipitationProbability',
+         headerName: 'Lluvia',
+         flex: 1,
+         minWidth: 55,
+         align: 'center',
+         headerAlign: 'center',
+         sortable: false,
+         renderCell: (params) => (
+            <div style={getDynamicStyle('precipitation', '#80deea')}>
+               {params.value == null ? '-' : `${params.value}%`}
+            </div>
+         )
+      },
+      {
+         field: 'humidity',
+         headerName: 'Hum',
+         flex: 0.8,
+         minWidth: 45,
+         align: 'center',
+         headerAlign: 'center',
+         sortable: false,
+         renderCell: (params) => (
+            <div style={getDynamicStyle('humidity', '#a5d6a7')}>
+               {params.value == null ? '-' : `${params.value}%`}
+            </div>
+         )
+      },
+      {
+         field: 'uvIndex',
+         headerName: 'UV',
+         flex: 0.7,
+         minWidth: 40,
+         align: 'center',
+         headerAlign: 'center',
+         sortable: false,
+         renderCell: (params) => (
+            <div style={getDynamicStyle('uv', '#ce93d8')}>
+               {params.value == null ? '-' : (params.value as number).toFixed(1)}
+            </div>
+         )
+      },
+   ];
 
    return (
       <Box sx={{ 
@@ -184,13 +230,23 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
                      width: '100%',
                   },
 
-                  // Colores de cabecera
+                  // --- COLORES DE CABECERA CON ATENUACIÓN ---
                   '& .MuiDataGrid-columnHeader[data-field="time"] .MuiDataGrid-columnHeaderTitle': { color: 'rgba(255,255,255,0.9)' },
-                  '& .MuiDataGrid-columnHeader[data-field="temperature"] .MuiDataGrid-columnHeaderTitle': { color: '#90caf9' },
-                  '& .MuiDataGrid-columnHeader[data-field="windSpeed"] .MuiDataGrid-columnHeaderTitle': { color: '#ffcc80' },
-                  '& .MuiDataGrid-columnHeader[data-field="precipitationProbability"] .MuiDataGrid-columnHeaderTitle': { color: '#80deea' },
-                  '& .MuiDataGrid-columnHeader[data-field="humidity"] .MuiDataGrid-columnHeaderTitle': { color: '#a5d6a7' },
-                  '& .MuiDataGrid-columnHeader[data-field="uvIndex"] .MuiDataGrid-columnHeaderTitle': { color: '#ce93d8' },
+                  '& .MuiDataGrid-columnHeader[data-field="temperature"] .MuiDataGrid-columnHeaderTitle': { 
+                     color: isColActive('temperature') ? '#90caf9' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
+                  },
+                  '& .MuiDataGrid-columnHeader[data-field="windSpeed"] .MuiDataGrid-columnHeaderTitle': { 
+                     color: isColActive('wind') ? '#ffcc80' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
+                  },
+                  '& .MuiDataGrid-columnHeader[data-field="precipitationProbability"] .MuiDataGrid-columnHeaderTitle': { 
+                     color: isColActive('precipitation') ? '#80deea' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
+                  },
+                  '& .MuiDataGrid-columnHeader[data-field="humidity"] .MuiDataGrid-columnHeaderTitle': { 
+                     color: isColActive('humidity') ? '#a5d6a7' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
+                  },
+                  '& .MuiDataGrid-columnHeader[data-field="uvIndex"] .MuiDataGrid-columnHeaderTitle': { 
+                     color: isColActive('uv') ? '#ce93d8' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
+                  },
 
                   '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
                   '& .MuiDataGrid-row': { bgcolor: 'transparent !important' },
@@ -213,32 +269,30 @@ export default function TableUI({ data, loading, error }: TableUIProps) {
                   '& .MuiDataGrid-footerContainer': {
                      borderTop: '1px solid rgba(255,255,255,0.15)',
                      bgcolor: 'transparent',
-                     minHeight: '55px', // Un poco más de altura para que respiren los botones
+                     minHeight: '55px', 
                      borderBottom: 'none',
                   },
                   '& .MuiTablePagination-root': { color: 'white' },
-                  // Estilo para el texto "1 - 7 de 24 horas"
                   '& .MuiTablePagination-displayedRows': { 
                      color: 'rgba(255,255,255,0.9)',
                      fontWeight: 500,
                   },
-                  // Estilo para los botones de las flechas
                   '& .MuiTablePagination-actions button': { 
                      color: 'white',
-                     backgroundColor: 'rgba(255,255,255,0.08)', // Fondo de botón
-                     borderRadius: '8px', // Bordes redondeados modernos
+                     backgroundColor: 'rgba(255,255,255,0.08)', 
+                     borderRadius: '8px', 
                      margin: '0 4px',
                      padding: '6px',
-                     transition: 'all 0.2s', // Animación suave
+                     transition: 'all 0.2s', 
                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.2)', // Brillo al pasar el mouse
+                        backgroundColor: 'rgba(255,255,255,0.2)', 
                      },
                      '&.Mui-disabled': {
                         opacity: 0.3,
-                        backgroundColor: 'transparent', // Flecha inactiva se funde con el fondo
+                        backgroundColor: 'transparent', 
                      }
                   },
-                  '& .MuiTablePagination-selectIcon': { display: 'none' }, // Ocultar flecha del selector si no se usa
+                  '& .MuiTablePagination-selectIcon': { display: 'none' }, 
                }}
             />
          </Box>
