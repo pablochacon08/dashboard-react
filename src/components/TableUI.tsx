@@ -9,7 +9,7 @@ interface TableUIProps {
    data: OpenMeteoResponse | null;
    loading: boolean;
    error: string | null;
-   activeMetric: string; // <-- NUEVO: Recibe la métrica activa
+   activeMetric: string;
 }
 
 function processHourlyData(data: OpenMeteoResponse) {
@@ -56,17 +56,17 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
 
    const rows = processHourlyData(data);
 
-   // --- LÓGICA DE ATENUACIÓN VISUAL ---
    const isColActive = (metricName: string) => {
       return activeMetric === 'both' || activeMetric === metricName;
    };
 
-   const getDynamicStyle = (metricName: string, color: string) => {
+   // Lógica visual ajustada: Solo cambiamos el color, mantenemos fontWeight en 400 (normal)
+   const getDynamicStyle = (metricName: string) => {
       const isActive = isColActive(metricName);
       return {
-         color: isActive ? color : 'rgba(255, 255, 255, 0.25)', // Se apaga si no está seleccionada
-         fontWeight: isActive ? 600 : 400,
-         transition: 'color 0.3s ease, font-weight 0.3s ease',
+         color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.25)', 
+         fontWeight: 400, // <-- Siempre en peso normal para no hacer "foco" excesivo
+         transition: 'color 0.3s ease',
          display: 'flex',
          alignItems: 'center',
          justifyContent: 'center',
@@ -75,7 +75,6 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
       };
    };
 
-   // Las columnas se mueven adentro del componente para poder leer activeMetric y usar getDynamicStyle
    const columns: GridColDef[] = [
       {
          field: 'time',
@@ -100,7 +99,7 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
          headerAlign: 'center',
          sortable: false,
          renderCell: (params) => (
-            <div style={getDynamicStyle('temperature', '#90caf9')}>
+            <div style={getDynamicStyle('temperature')}>
                {params.value == null ? '-' : `${params.value.toFixed(1)}°`}
             </div>
          )
@@ -114,7 +113,7 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
          headerAlign: 'center',
          sortable: false,
          renderCell: (params) => (
-            <div style={getDynamicStyle('wind', '#ffcc80')}>
+            <div style={getDynamicStyle('wind')}>
                {params.value == null ? '-' : (params.value as number).toFixed(1)}
             </div>
          )
@@ -128,7 +127,7 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
          headerAlign: 'center',
          sortable: false,
          renderCell: (params) => (
-            <div style={getDynamicStyle('precipitation', '#80deea')}>
+            <div style={getDynamicStyle('precipitation')}>
                {params.value == null ? '-' : `${params.value}%`}
             </div>
          )
@@ -142,7 +141,7 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
          headerAlign: 'center',
          sortable: false,
          renderCell: (params) => (
-            <div style={getDynamicStyle('humidity', '#a5d6a7')}>
+            <div style={getDynamicStyle('humidity')}>
                {params.value == null ? '-' : `${params.value}%`}
             </div>
          )
@@ -156,7 +155,7 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
          headerAlign: 'center',
          sortable: false,
          renderCell: (params) => (
-            <div style={getDynamicStyle('uv', '#ce93d8')}>
+            <div style={getDynamicStyle('uv')}>
                {params.value == null ? '-' : (params.value as number).toFixed(1)}
             </div>
          )
@@ -230,7 +229,6 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
                      width: '100%',
                   },
 
-                  // --- COLORES DE CABECERA CON ATENUACIÓN ---
                   '& .MuiDataGrid-columnHeader[data-field="time"] .MuiDataGrid-columnHeaderTitle': { color: 'rgba(255,255,255,0.9)' },
                   '& .MuiDataGrid-columnHeader[data-field="temperature"] .MuiDataGrid-columnHeaderTitle': { 
                      color: isColActive('temperature') ? '#90caf9' : 'rgba(255,255,255,0.25)', transition: 'color 0.3s' 
@@ -265,7 +263,6 @@ export default function TableUI({ data, loading, error, activeMetric }: TableUIP
                   '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
                   '& .MuiDataGrid-columnSeparator': { display: 'none' },
                   
-                  // CONTENEDOR DE PAGINACIÓN Y MEJORAS DE LOS BOTONES
                   '& .MuiDataGrid-footerContainer': {
                      borderTop: '1px solid rgba(255,255,255,0.15)',
                      bgcolor: 'transparent',
